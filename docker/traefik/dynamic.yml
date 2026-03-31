@@ -1,0 +1,4 @@
+tls:
+  certificates:
+    - certFile: /certs/mcarvalho.work.pem
+      keyFile: /certs/mcarvalho.work.key
