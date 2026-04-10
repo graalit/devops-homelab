@@ -84,3 +84,46 @@ services:
       - "traefik.http.routers.uptime.entrypoints=websecure"
       - "traefik.http.routers.uptime.tls=true"
       - "traefik.http.services.uptime.loadbalancer.server.port=3001"
+
+  # ── LOKI ──────────────────────────────────────
+  # Stocke et indexe les logs
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    volumes:
+      - ./loki:/etc/loki
+      - ./loki/data:/loki
+    command: -config.file=/etc/loki/loki.yml
+    networks:
+      - monitoring
+
+  # ── PROMTAIL ──────────────────────────────────
+  # Collecte les logs Docker et les envoie à Loki
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail:/etc/promtail
+    command: -config.file=/etc/promtail/promtail.yml
+    networks:
+      - monitoring
+
+# ── CADVISOR ──────────────────────────────────
+  # Collecte les métriques de chaque conteneur
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitoring

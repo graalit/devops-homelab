@@ -16,3 +16,9 @@ backups/
 # OS
 .DS_Store
 Thumbs.db
+# Uptime Kuma DB
+**/kuma.db*
+# Loki data
+**/loki/data/
+# Env files
+**/.env

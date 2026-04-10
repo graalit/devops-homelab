@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin — mcarvalho.work</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --bg2:      #1a1d27;
+  --bg3:      #22263a;
+  --border:   #2e3350;
+  --accent:   #6366f1;
+  --accent2:  #818cf8;
+  --success:  #10b981;
+  --danger:   #ef4444;
+  --warning:  #f59e0b;
+  --text:     #e2e8f0;
+  --text2:    #94a3b8;
+  --text3:    #64748b;
+  --sidebar:  240px;
+  --radius:   10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px}
+
+/* ── AUTH ── */
+#auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100}
+.auth-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px;width:360px;text-align:center}
+.auth-card .logo{font-size:28px;font-weight:700;color:var(--accent2);margin-bottom:8px}
+.auth-card .sub{color:var(--text2);font-size:13px;margin-bottom:32px}
+.auth-card input{width:100%;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;margin-bottom:12px;outline:none;transition:border .2s}
+.auth-card input:focus{border-color:var(--accent)}
+.auth-card .btn-login{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:4px}
+.auth-card .btn-login:hover{opacity:.85}
+.auth-error{color:var(--danger);font-size:13px;margin-top:10px;min-height:20px}
+
+/* ── LAYOUT ── */
+#app{display:none;width:100%;min-height:100vh}
+.sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:10}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.sidebar-logo .name{font-size:15px;font-weight:700;color:var(--accent2)}
+.sidebar-logo .domain{font-size:12px;color:var(--text3);margin-top:2px}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-section{padding:8px 16px 4px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:var(--text2);cursor:pointer;border-radius:0;transition:all .15s;border-left:3px solid transparent;font-size:13px}
+.nav-item:hover{color:var(--text);background:var(--bg3)}
+.nav-item.active{color:var(--accent2);background:rgba(99,102,241,.1);border-left-color:var(--accent)}
+.nav-item .icon{width:16px;text-align:center;font-size:15px;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.sidebar-footer .user{font-size:13px;color:var(--text2);margin-bottom:10px}
+.sidebar-footer .user span{color:var(--text);font-weight:500}
+.btn-logout{width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-size:13px;cursor:pointer;transition:all .2s}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh;padding:32px}
+.page{display:none}
+.page.active{display:block}
+
+/* ── HEADER ── */
+.page-header{margin-bottom:28px}
+.page-header h1{font-size:22px;font-weight:700;color:var(--text)}
+.page-header p{color:var(--text2);font-size:13px;margin-top:4px}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.card-title .badge{background:rgba(99,102,241,.15);color:var(--accent2);font-size:11px;padding:2px 8px;border-radius:20px}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid.full{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.span2{grid-column:span 2}
+label{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+input[type=text],input[type=url],input[type=email],textarea,select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:10px 14px;outline:none;transition:border .2s;width:100%;font-family:inherit}
+input[type=text]:focus,input[type=url]:focus,input[type=email]:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:90px;line-height:1.5}
+select option{background:var(--bg2)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent2)}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.2)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-success{background:rgba(16,185,129,.1);color:var(--success);border:1px solid rgba(16,185,129,.2)}
+.btn-success:hover{background:rgba(16,185,129,.2)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.form-actions{display:flex;gap:10px;margin-top:20px;align-items:center}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.success{background:#0f3d2e;color:var(--success);border:1px solid rgba(16,185,129,.3)}
+#toast.error{background:#3d0f0f;color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+
+/* ── STATS DASHBOARD ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:8px}
+.stat-card .stat-value{font-size:28px;font-weight:700;color:var(--accent2)}
+.stat-card .stat-label{font-size:12px;color:var(--text2)}
+.stat-card .stat-icon{font-size:20px;margin-bottom:4px}
+
+/* ── LIST ITEMS ── */
+.list-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px}
+.list-item-body{flex:1;min-width:0}
+.list-item-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.list-item-sub{font-size:12px;color:var(--text2);line-height:1.5}
+.list-item-actions{display:flex;gap:8px;flex-shrink:0;margin-top:2px}
+.list-item .drag-handle{color:var(--text3);cursor:grab;font-size:16px;padding:2px;user-select:none}
+.badge-visible{background:rgba(16,185,129,.1);color:var(--success);font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid rgba(16,185,129,.2)}
+.badge-hidden{background:rgba(239,68,68,.1);color:var(--danger);font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid rgba(239,68,68,.2)}
+.badge-type{background:rgba(99,102,241,.1);color:var(--accent2);font-size:11px;padding:2px 8px;border-radius:20px}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;position:sticky;top:0;background:var(--bg2);padding-top:20px;z-index:1;border-bottom:1px solid var(--border);padding-bottom:16px}
+.modal-header h2{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:20px;line-height:1;padding:4px;border-radius:6px}
+.modal-close:hover{color:var(--text);background:var(--bg3)}
+.modal-body{padding:0 24px 24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:var(--bg2)}
+
+/* ── TAGS ── */
+.tags-container{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{background:rgba(99,102,241,.1);color:var(--accent2);font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(99,102,241,.2);display:flex;align-items:center;gap:4px}
+.tag-remove{cursor:pointer;color:var(--text3);line-height:1;background:none;border:none;font-size:14px;padding:0}
+.tag-remove:hover{color:var(--danger)}
+.tag-input-row{display:flex;gap:8px;margin-top:8px}
+.tag-input-row input{flex:1}
+
+/* ── TOGGLE ── */
+.toggle-wrap{display:flex;align-items:center;gap:10px}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border);border-radius:11px;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;height:16px;width:16px;left:2px;bottom:2px;background:var(--text3);border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:rgba(99,102,241,.3);border-color:var(--accent)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px);background:var(--accent2)}
+.toggle-label{font-size:13px;color:var(--text2)}
+
+/* ── LOADING ── */
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text2);gap:12px}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:40px;color:var(--text2)}
+.empty-state .empty-icon{font-size:32px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* ── DIVIDER ── */
+.section-divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="logo">⚡ Admin</div>
+    <div class="sub">mcarvalho.work — Interface d'administration</div>
+    <input type="text" id="login-user" placeholder="Identifiant" autocomplete="username"/>
+    <input type="password" id="login-pass" placeholder="Mot de passe" autocomplete="current-password"/>
+    <button class="btn-login" onclick="doLogin()">Se connecter</button>
+    <div class="auth-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="name">⚡ Admin Panel</div>
+      <div class="domain">mcarvalho.work</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Vue d'ensemble</div>
+      <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">
+        <span class="icon">📊</span> Dashboard
+      </div>
+      <div class="nav-section">Contenu</div>
+      <div class="nav-item" onclick="showPage('hero')" data-page="hero">
+        <span class="icon">🏠</span> Hero & Identité
+      </div>
+      <div class="nav-item" onclick="showPage('experiences')" data-page="experiences">
+        <span class="icon">💼</span> Expériences
+      </div>
+      <div class="nav-item" onclick="showPage('projects')" data-page="projects">
+        <span class="icon">🚀</span> Projets
+      </div>
+      <div class="nav-item" onclick="showPage('stack')" data-page="stack">
+        <span class="icon">🛠</span> Stack technique
+      </div>
+      <div class="nav-item" onclick="showPage('softskills')" data-page="softskills">
+        <span class="icon">💬</span> Soft Skills
+      </div>
+      <div class="nav-item" onclick="showPage('veille')" data-page="veille">
+        <span class="icon">📡</span> Veille
+      </div>
+      <div class="nav-item" onclick="showPage('languages')" data-page="languages">
+        <span class="icon">🌍</span> Langues
+      </div>
+      <div class="nav-item" onclick="showPage('contact')" data-page="contact">
+        <span class="icon">✉️</span> Contact
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user">Connecté : <span id="admin-username">admin</span></div>
+      <button class="btn-logout" onclick="doLogout()">Se déconnecter</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Vue d'ensemble de ton portfolio</p>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-icon">💼</div><div class="stat-value" id="stat-xp">—</div><div class="stat-label">Expériences</div></div>
+        <div class="stat-card"><div class="stat-icon">🚀</div><div class="stat-value" id="stat-proj">—</div><div class="stat-label">Projets</div></div>
+        <div class="stat-card"><div class="stat-icon">🛠</div><div class="stat-value" id="stat-stack">—</div><div class="stat-label">Technologies</div></div>
+        <div class="stat-card"><div class="stat-icon">🔐</div><div class="stat-value" id="stat-logins">—</div><div class="stat-label">Connexions admin</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌐 Aperçu du site</div>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Voir le portfolio public</p>
+        <a href="https://mcarvalho.work" target="_blank" class="btn btn-secondary">Ouvrir mcarvalho.work ↗</a>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="page" id="page-hero">
+      <div class="page-header"><h1>Hero & Identité</h1><p>La section principale de ton portfolio</p></div>
+      <div class="card">
+        <div class="card-title">✏️ Modifier le Hero</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Nom</label><input type="text" id="hero-name"/></div>
+          <div class="form-group"><label>Ville</label><input type="text" id="hero-city"/></div>
+          <div class="form-group span2"><label>Rôle / Titre</label><input type="text" id="hero-role"/></div>
+          <div class="form-group span2"><label>Sous-titre</label><textarea id="hero-subtitle"></textarea></div>
+          <div class="form-group span2"><label>Tagline</label><textarea id="hero-tagline" style="min-height:70px"></textarea></div>
+          <div class="form-group span2"><label>Objectif CDI</label><input type="text" id="hero-target"/></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveHero()">💾 Sauvegarder</button>
+          <button class="btn btn-secondary" onclick="loadHero()">↺ Recharger</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPERIENCES -->
+    <div class="page" id="page-experiences">
+      <div class="page-header"><h1>Expériences</h1><p>Tes expériences professionnelles</p></div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openModal('xp')">+ Ajouter une expérience</button>
+      </div>
+      <div id="xp-list"></div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="page" id="page-projects">
+      <div class="page-header"><h1>Projets</h1><p>Tes projets et réalisations</p></div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openModal('project')">+ Ajouter un projet</button>
+      </div>
+      <div id="projects-list"></div>
+    </div>
+
+    <!-- STACK -->
+    <div class="page" id="page-stack">
+      <div class="page-header"><h1>Stack technique</h1><p>Tes technologies et outils</p></div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openModal('stack')">+ Ajouter une technologie</button>
+      </div>
+      <div id="stack-list"></div>
+    </div>
+
+    <!-- SOFTSKILLS -->
+    <div class="page" id="page-softskills">
+      <div class="page-header"><h1>Soft Skills</h1><p>Tes compétences comportementales</p></div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openModal('ss')">+ Ajouter un soft skill</button>
+      </div>
+      <div id="ss-list"></div>
+    </div>
+
+    <!-- VEILLE -->
+    <div class="page" id="page-veille">
+      <div class="page-header"><h1>Veille technologique</h1><p>Tes sources et pratiques de veille</p></div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openModal('veille')">+ Ajouter une veille</button>
+      </div>
+      <div id="veille-list"></div>
+    </div>
+
+    <!-- LANGUAGES -->
+    <div class="page" id="page-languages">
+      <div class="page-header"><h1>Langues</h1><p>Tes niveaux de langues</p></div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openModal('lang')">+ Ajouter une langue</button>
+      </div>
+      <div id="lang-list"></div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="page" id="page-contact">
+      <div class="page-header"><h1>Contact</h1><p>Tes informations de contact</p></div>
+      <div class="card">
+        <div class="card-title">✏️ Modifier le contact</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Email</label><input type="email" id="contact-email"/></div>
+          <div class="form-group"><label>LinkedIn URL</label><input type="url" id="contact-linkedin"/></div>
+          <div class="form-group"><label>Site web</label><input type="url" id="contact-website"/></div>
+          <div class="form-group"><label>Texte disponibilité</label><input type="text" id="contact-availability"/></div>
+          <div class="form-group span2">
+            <label>Villes (séparées par virgule)</label>
+            <input type="text" id="contact-cities" placeholder="Paris, Suisse, Luxembourg"/>
+          </div>
+          <div class="form-group span2">
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" id="contact-available"/><span class="toggle-slider"></span></label>
+              <span class="toggle-label">Disponible pour opportunités</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveContact()">💾 Sauvegarder</button>
+          <button class="btn btn-secondary" onclick="loadContact()">↺ Recharger</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<!-- Modal Expérience -->
+<div class="modal-overlay" id="modal-xp">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-xp-title">Ajouter une expérience</h2>
+      <button class="modal-close" onclick="closeModal('xp')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="xp-id"/>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Type</label>
+          <select id="xp-type">
+            <option value="current">Actuel</option>
+            <option value="previous">Précédent</option>
+            <option value="personal">Personnel</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Période</label><input type="text" id="xp-period" placeholder="2020 → 2023"/></div>
+        <div class="form-group span2"><label>Rôle</label><input type="text" id="xp-role"/></div>
+        <div class="form-group span2"><label>Entreprise</label><input type="text" id="xp-company"/></div>
+        <div class="form-group span2"><label>Description</label><textarea id="xp-desc"></textarea></div>
+        <div class="form-group span2">
+          <label>Tags</label>
+          <div class="tag-input-row">
+            <input type="text" id="xp-tag-input" placeholder="Ajouter un tag..." onkeydown="if(event.key==='Enter'){event.preventDefault();addTag('xp')}"/>
+            <button class="btn btn-secondary btn-sm" onclick="addTag('xp')">+ Ajouter</button>
+          </div>
+          <div class="tags-container" id="xp-tags"></div>
+        </div>
+        <div class="form-group">
+          <label>Ordre</label><input type="text" id="xp-order" placeholder="1"/>
+        </div>
+        <div class="form-group">
+          <label style="margin-bottom:12px">Visible</label>
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" id="xp-visible" checked/><span class="toggle-slider"></span></label>
+            <span class="toggle-label">Afficher sur le portfolio</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('xp')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveXp()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Projet -->
+<div class="modal-overlay" id="modal-project">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-project-title">Ajouter un projet</h2>
+      <button class="modal-close" onclick="closeModal('project')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="project-id"/>
+      <div class="form-grid">
+        <div class="form-group span2"><label>Titre</label><input type="text" id="project-title"/></div>
+        <div class="form-group span2"><label>Sous-titre</label><input type="text" id="project-subtitle"/></div>
+        <div class="form-group span2"><label>URL du projet</label><input type="url" id="project-url" placeholder="https://..."/></div>
+        <div class="form-group span2">
+          <label>Image du projet</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="url" id="project-image" placeholder="https://... ou /uploads/mon-image.png" style="flex:1"/>
+          </div>
+          <div id="project-image-preview" style="display:none;margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid var(--border);max-height:120px">
+            <img id="project-image-thumb" style="width:100%;height:120px;object-fit:cover;display:block"/>
+          </div>
+          <div style="margin-top:8px;padding:10px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500">📤 Uploader une image</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="file" id="project-image-file" accept="image/*" style="font-size:12px;color:var(--text2);flex:1"/>
+              <button class="btn btn-secondary btn-sm" onclick="uploadProjectImage()">Uploader</button>
+            </div>
+            <div id="upload-status" style="font-size:11px;margin-top:6px;color:var(--text3)"></div>
+          </div>
+          <small style="color:var(--text3);font-size:11px;margin-top:6px;display:block">
+            💡 Laisse vide + URL renseignée = screenshot automatique · Sans URL = gradient
+          </small>
+        </div>
+        <div class="form-group span2"><label>Description</label><textarea id="project-desc"></textarea></div>
+        <div class="form-group span2">
+          <label>Tags</label>
+          <div class="tag-input-row">
+            <input type="text" id="project-tag-input" placeholder="Ajouter un tag..." onkeydown="if(event.key==='Enter'){event.preventDefault();addTag('project')}"/>
+            <button class="btn btn-secondary btn-sm" onclick="addTag('project')">+ Ajouter</button>
+          </div>
+          <div class="tags-container" id="project-tags"></div>
+        </div>
+        <div class="form-group">
+          <label>Ordre</label><input type="text" id="project-order" placeholder="1"/>
+        </div>
+        <div class="form-group">
+          <label style="margin-bottom:12px">Visible</label>
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" id="project-visible" checked/><span class="toggle-slider"></span></label>
+            <span class="toggle-label">Afficher sur le portfolio</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('project')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveProject()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Stack -->
+<div class="modal-overlay" id="modal-stack">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-stack-title">Ajouter une technologie</h2>
+      <button class="modal-close" onclick="closeModal('stack')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="stack-id"/>
+      <div class="form-grid">
+        <div class="form-group span2"><label>Label</label><input type="text" id="stack-label" placeholder="Docker"/></div>
+        <div class="form-group"><label>Catégorie</label><input type="text" id="stack-category" placeholder="Infrastructure"/></div>
+        <div class="form-group">
+          <label>Niveau</label>
+          <select id="stack-tier">
+            <option value="primary">Principal</option>
+            <option value="secondary">Secondaire</option>
+            <option value="tertiary">Tertiaire</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Icône (emoji)</label><input type="text" id="stack-icon" placeholder="🐳"/></div>
+        <div class="form-group"><label>Ordre</label><input type="text" id="stack-order" placeholder="1"/></div>
+        <div class="form-group span2">
+          <label style="margin-bottom:12px">Visible</label>
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" id="stack-visible" checked/><span class="toggle-slider"></span></label>
+            <span class="toggle-label">Afficher sur le portfolio</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('stack')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveStack()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Soft Skill -->
+<div class="modal-overlay" id="modal-ss">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-ss-title">Ajouter un soft skill</h2>
+      <button class="modal-close" onclick="closeModal('ss')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ss-id"/>
+      <div class="form-grid full">
+        <div class="form-group"><label>Texte</label><textarea id="ss-text" style="min-height:120px"></textarea></div>
+        <div class="form-group"><label>Ordre</label><input type="text" id="ss-order" placeholder="1"/></div>
+        <div class="form-group">
+          <label style="margin-bottom:12px">Visible</label>
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" id="ss-visible" checked/><span class="toggle-slider"></span></label>
+            <span class="toggle-label">Afficher</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('ss')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveSS()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Veille -->
+<div class="modal-overlay" id="modal-veille">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-veille-title">Ajouter une veille</h2>
+      <button class="modal-close" onclick="closeModal('veille')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="veille-id"/>
+      <div class="form-grid">
+        <div class="form-group"><label>Icône (emoji)</label><input type="text" id="veille-icon" placeholder="🤖"/></div>
+        <div class="form-group">
+          <label>Fréquence</label>
+          <select id="veille-frequency">
+            <option value="quotidien">Quotidien</option>
+            <option value="hebdo">Hebdomadaire</option>
+            <option value="régulier">Régulier</option>
+          </select>
+        </div>
+        <div class="form-group span2"><label>Nom</label><input type="text" id="veille-name"/></div>
+        <div class="form-group span2"><label>Description</label><textarea id="veille-desc" style="min-height:80px"></textarea></div>
+        <div class="form-group"><label>Ordre</label><input type="text" id="veille-order" placeholder="1"/></div>
+        <div class="form-group">
+          <label style="margin-bottom:12px">Visible</label>
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" id="veille-visible" checked/><span class="toggle-slider"></span></label>
+            <span class="toggle-label">Afficher</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('veille')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveVeille()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Langue -->
+<div class="modal-overlay" id="modal-lang">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-lang-title">Ajouter une langue</h2>
+      <button class="modal-close" onclick="closeModal('lang')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="lang-id"/>
+      <div class="form-grid">
+        <div class="form-group span2"><label>Langue</label><input type="text" id="lang-name" placeholder="Français"/></div>
+        <div class="form-group"><label>Niveau</label><input type="text" id="lang-level" placeholder="Natif"/></div>
+        <div class="form-group"><label>Sous-niveau</label><input type="text" id="lang-sublevel" placeholder="Langue natale"/></div>
+        <div class="form-group"><label>Pourcentage (0-100)</label><input type="text" id="lang-percent" placeholder="100"/></div>
+        <div class="form-group">
+          <label>Couleur</label>
+          <select id="lang-color">
+            <option value="cyan">Cyan</option>
+            <option value="violet">Violet</option>
+            <option value="green">Vert</option>
+            <option value="amber">Ambre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Ordre</label><input type="text" id="lang-order" placeholder="1"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('lang')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveLang()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+const API = '/api';
+let TOKEN = localStorage.getItem('admin_token') || '';
+const tagData = { xp: [], project: [] };
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+(async () => {
+  if (TOKEN) {
+    try {
+      const r = await fetch(`${API}/auth/me`, { headers: authHeader() });
+      if (r.ok) {
+        const d = await r.json();
+        document.getElementById('admin-username').textContent = d.username;
+        showApp();
+        return;
+      }
+    } catch {}
+  }
+  TOKEN = '';
+})();
+
+// ══════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════
+async function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const err  = document.getElementById('login-error');
+  if (!user || !pass) { err.textContent = 'Remplissez tous les champs'; return; }
+  try {
+    const r = await fetch(`${API}/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    });
+    const d = await r.json();
+    if (!r.ok) { err.textContent = d.error || 'Identifiants incorrects'; return; }
+    TOKEN = d.token;
+    localStorage.setItem('admin_token', TOKEN);
+    document.getElementById('admin-username').textContent = d.username;
+    err.textContent = '';
+    showApp();
+  } catch { err.textContent = 'Erreur de connexion'; }
+}
+
+function doLogout() {
+  TOKEN = '';
+  localStorage.removeItem('admin_token');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('login-pass').value = '';
+}
+
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  loadDashboard();
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function authHeader() {
+  return { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
+}
+
+async function apiFetch(url, opts = {}) {
+  const r = await fetch(API + url, { headers: authHeader(), ...opts });
+  if (r.status === 401) { doLogout(); return null; }
+  return r;
+}
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+  const loaders = { dashboard: loadDashboard, hero: loadHero, experiences: loadXp,
+    projects: loadProjects, stack: loadStack, softskills: loadSS,
+    veille: loadVeille, languages: loadLang, contact: loadContact };
+  if (loaders[name]) loaders[name]();
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  setTimeout(() => el.className = '', 3000);
+}
+
+// ══════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════
+function openModal(type, data = null) {
+  const modal = document.getElementById('modal-' + type);
+  if (!modal) return;
+  resetModal(type, data);
+  modal.classList.add('open');
+}
+
+function closeModal(type) {
+  document.getElementById('modal-' + type).classList.remove('open');
+}
+
+function resetModal(type, data) {
+  const titles = { xp: 'Ajouter une expérience', project: 'Ajouter un projet',
+    stack: 'Ajouter une technologie', ss: 'Ajouter un soft skill',
+    veille: 'Ajouter une veille', lang: 'Ajouter une langue' };
+  document.getElementById(`modal-${type}-title`).textContent =
+    data ? titles[type].replace('Ajouter', 'Modifier') : titles[type];
+  if (type === 'xp') fillXpModal(data);
+  else if (type === 'project') fillProjectModal(data);
+  else if (type === 'stack') fillStackModal(data);
+  else if (type === 'ss') fillSSModal(data);
+  else if (type === 'veille') fillVeilleModal(data);
+  else if (type === 'lang') fillLangModal(data);
+}
+
+// ══════════════════════════════════════════════
+// TAGS
+// ══════════════════════════════════════════════
+function addTag(type) {
+  const input = document.getElementById(`${type}-tag-input`);
+  const val = input.value.trim();
+  if (!val) return;
+  if (!tagData[type]) tagData[type] = [];
+  tagData[type].push(val);
+  renderTags(type);
+  input.value = '';
+  input.focus();
+}
+
+function removeTag(type, i) {
+  tagData[type].splice(i, 1);
+  renderTags(type);
+}
+
+function renderTags(type) {
+  const container = document.getElementById(`${type}-tags`);
+  container.innerHTML = tagData[type].map((t, i) =>
+    `<span class="tag">${t}<button class="tag-remove" onclick="removeTag('${type}',${i})">×</button></span>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+async function loadDashboard() {
+  const r = await apiFetch('/admin/stats');
+  if (!r) return;
+  const d = await r.json();
+  document.getElementById('stat-xp').textContent     = d.experiences || 0;
+  document.getElementById('stat-proj').textContent   = d.projects || 0;
+  document.getElementById('stat-stack').textContent  = d.stack || 0;
+  document.getElementById('stat-logins').textContent = d.logins || 0;
+}
+
+// ══════════════════════════════════════════════
+// HERO
+// ══════════════════════════════════════════════
+async function loadHero() {
+  const r = await apiFetch('/hero');
+  if (!r) return;
+  const d = await r.json();
+  document.getElementById('hero-name').value     = d.name || '';
+  document.getElementById('hero-role').value     = d.role || '';
+  document.getElementById('hero-subtitle').value = d.subtitle || '';
+  document.getElementById('hero-tagline').value  = d.tagline || '';
+  document.getElementById('hero-target').value   = d.target || '';
+  document.getElementById('hero-city').value     = d.city || '';
+}
+
+async function saveHero() {
+  const r = await apiFetch('/hero', {
+    method: 'PUT',
+    body: JSON.stringify({
+      name:     document.getElementById('hero-name').value,
+      role:     document.getElementById('hero-role').value,
+      subtitle: document.getElementById('hero-subtitle').value,
+      tagline:  document.getElementById('hero-tagline').value,
+      target:   document.getElementById('hero-target').value,
+      city:     document.getElementById('hero-city').value,
+    })
+  });
+  if (!r) return;
+  const d = await r.json();
+  r.ok ? toast('✅ Hero mis à jour !') : toast('❌ ' + d.error, 'error');
+}
+
+// ══════════════════════════════════════════════
+// EXPERIENCES
+// ══════════════════════════════════════════════
+function fillXpModal(d) {
+  document.getElementById('xp-id').value      = d?.id || '';
+  document.getElementById('xp-type').value    = d?.type || 'current';
+  document.getElementById('xp-period').value  = d?.period || '';
+  document.getElementById('xp-role').value    = d?.role || '';
+  document.getElementById('xp-company').value = d?.company || '';
+  document.getElementById('xp-desc').value    = d?.description || '';
+  document.getElementById('xp-order').value   = d?.sort_order || '';
+  document.getElementById('xp-visible').checked = d ? d.visible : true;
+  tagData.xp = d?.tags ? (typeof d.tags === 'string' ? JSON.parse(d.tags) : d.tags) : [];
+  renderTags('xp');
+}
+
+async function loadXp() {
+  const el = document.getElementById('xp-list');
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Chargement...</div>';
+  const r = await apiFetch('/experiences/all');
+  if (!r) return;
+  const data = await r.json();
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">💼</div><p>Aucune expérience</p></div>'; return; }
+  el.innerHTML = data.map(x => `
+    <div class="list-item">
+      <div class="list-item-body">
+        <div class="list-item-title">${x.role} — ${x.company}</div>
+        <div class="list-item-sub">${x.period}</div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge-type">${x.type}</span>
+          <span class="${x.visible ? 'badge-visible' : 'badge-hidden'}">${x.visible ? 'Visible' : 'Masqué'}</span>
+        </div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('xp',${JSON.stringify(x).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-sm ${x.visible ? 'btn-warning' : 'btn-success'}" onclick="toggleItem('experiences',${x.id},loadXp)" style="background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)">${x.visible ? '🙈' : '👁'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('experiences',${x.id},loadXp)">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function saveXp() {
+  const id = document.getElementById('xp-id').value;
+  const body = {
+    type: document.getElementById('xp-type').value,
+    period: document.getElementById('xp-period').value,
+    role: document.getElementById('xp-role').value,
+    company: document.getElementById('xp-company').value,
+    description: document.getElementById('xp-desc').value,
+    tags: JSON.stringify(tagData.xp),
+    sort_order: parseInt(document.getElementById('xp-order').value) || 0,
+    visible: document.getElementById('xp-visible').checked,
+  };
+  const r = await apiFetch(id ? `/experiences/${id}` : '/experiences',
+    { method: id ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  if (!r) return;
+  const d = await r.json();
+  if (r.ok) { toast('✅ Expérience sauvegardée !'); closeModal('xp'); loadXp(); }
+  else toast('❌ ' + d.error, 'error');
+}
+
+// ══════════════════════════════════════════════
+// PROJECTS
+// ══════════════════════════════════════════════
+function fillProjectModal(d) {
+  document.getElementById('project-id').value       = d?.id || '';
+  document.getElementById('project-title').value    = d?.title || '';
+  document.getElementById('project-subtitle').value = d?.subtitle || '';
+  document.getElementById('project-url').value      = d?.url || '';
+  document.getElementById('project-desc').value     = d?.description || '';
+  document.getElementById('project-order').value    = d?.sort_order || '';
+  document.getElementById('project-image').value    = d?.image_url || '';
+  document.getElementById('project-visible').checked = d ? d.visible : true;
+  tagData.project = d?.tags ? (typeof d.tags === 'string' ? JSON.parse(d.tags) : d.tags) : [];
+  renderTags('project');
+}
+
+async function loadProjects() {
+  const el = document.getElementById('projects-list');
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Chargement...</div>';
+  const r = await apiFetch('/projects/all');
+  if (!r) return;
+  const data = await r.json();
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🚀</div><p>Aucun projet</p></div>'; return; }
+  el.innerHTML = data.map(x => `
+    <div class="list-item">
+      <div class="list-item-body">
+        <div class="list-item-title">${x.title}</div>
+        <div class="list-item-sub">${x.subtitle || ''} ${x.url ? `<a href="${x.url}" target="_blank" style="color:var(--accent2)">↗</a>` : ''}</div>
+        <div style="margin-top:6px"><span class="${x.visible ? 'badge-visible' : 'badge-hidden'}">${x.visible ? 'Visible' : 'Masqué'}</span></div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('project',${JSON.stringify(x).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-sm" onclick="toggleItem('projects',${x.id},loadProjects)" style="background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)">${x.visible ? '🙈' : '👁'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('projects',${x.id},loadProjects)">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function saveProject() {
+  const id = document.getElementById('project-id').value;
+  const body = {
+    title: document.getElementById('project-title').value,
+    subtitle: document.getElementById('project-subtitle').value,
+    url: document.getElementById('project-url').value || null,
+    image_url: document.getElementById('project-image').value || null,
+    description: document.getElementById('project-desc').value,
+    tags: JSON.stringify(tagData.project),
+    sort_order: parseInt(document.getElementById('project-order').value) || 0,
+    visible: document.getElementById('project-visible').checked,
+  };
+  const r = await apiFetch(id ? `/projects/${id}` : '/projects',
+    { method: id ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  if (!r) return;
+  const d = await r.json();
+  if (r.ok) { toast('✅ Projet sauvegardé !'); closeModal('project'); loadProjects(); }
+  else toast('❌ ' + d.error, 'error');
+}
+
+// ══════════════════════════════════════════════
+// STACK
+// ══════════════════════════════════════════════
+function fillStackModal(d) {
+  document.getElementById('stack-id').value       = d?.id || '';
+  document.getElementById('stack-label').value    = d?.label || '';
+  document.getElementById('stack-category').value = d?.category || '';
+  document.getElementById('stack-tier').value     = d?.tier || 'primary';
+  document.getElementById('stack-icon').value     = d?.icon_value || '';
+  document.getElementById('stack-order').value    = d?.sort_order || '';
+  document.getElementById('stack-visible').checked = d ? d.visible : true;
+}
+
+async function loadStack() {
+  const el = document.getElementById('stack-list');
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Chargement...</div>';
+  const r = await apiFetch('/stack/all');
+  if (!r) return;
+  const data = await r.json();
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🛠</div><p>Aucune technologie</p></div>'; return; }
+  el.innerHTML = data.map(x => `
+    <div class="list-item">
+      <div class="list-item-body">
+        <div class="list-item-title">${x.icon_value || ''} ${x.label}</div>
+        <div class="list-item-sub">${x.category} · ${x.tier}</div>
+        <div style="margin-top:6px"><span class="${x.visible ? 'badge-visible' : 'badge-hidden'}">${x.visible ? 'Visible' : 'Masqué'}</span></div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('stack',${JSON.stringify(x).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-sm" onclick="toggleItem('stack',${x.id},loadStack)" style="background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)">${x.visible ? '🙈' : '👁'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('stack',${x.id},loadStack)">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function saveStack() {
+  const id = document.getElementById('stack-id').value;
+  const body = {
+    label: document.getElementById('stack-label').value,
+    category: document.getElementById('stack-category').value,
+    tier: document.getElementById('stack-tier').value,
+    icon_type: 'emoji',
+    icon_value: document.getElementById('stack-icon').value,
+    sort_order: parseInt(document.getElementById('stack-order').value) || 0,
+    visible: document.getElementById('stack-visible').checked,
+  };
+  const r = await apiFetch(id ? `/stack/${id}` : '/stack',
+    { method: id ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  if (!r) return;
+  const d = await r.json();
+  if (r.ok) { toast('✅ Technologie sauvegardée !'); closeModal('stack'); loadStack(); }
+  else toast('❌ ' + d.error, 'error');
+}
+
+// ══════════════════════════════════════════════
+// SOFT SKILLS
+// ══════════════════════════════════════════════
+function fillSSModal(d) {
+  document.getElementById('ss-id').value      = d?.id || '';
+  document.getElementById('ss-text').value    = d?.text || '';
+  document.getElementById('ss-order').value   = d?.sort_order || '';
+  document.getElementById('ss-visible').checked = d ? d.visible : true;
+}
+
+async function loadSS() {
+  const el = document.getElementById('ss-list');
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Chargement...</div>';
+  const r = await apiFetch('/softskills/all');
+  if (!r) return;
+  const data = await r.json();
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><p>Aucun soft skill</p></div>'; return; }
+  el.innerHTML = data.map(x => `
+    <div class="list-item">
+      <div class="list-item-body">
+        <div class="list-item-sub" style="font-size:13px;color:var(--text)">${x.text}</div>
+        <div style="margin-top:6px"><span class="${x.visible ? 'badge-visible' : 'badge-hidden'}">${x.visible ? 'Visible' : 'Masqué'}</span></div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('ss',${JSON.stringify(x).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-sm" onclick="toggleItem('softskills',${x.id},loadSS)" style="background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)">${x.visible ? '🙈' : '👁'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('softskills',${x.id},loadSS)">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function saveSS() {
+  const id = document.getElementById('ss-id').value;
+  const body = {
+    text: document.getElementById('ss-text').value,
+    sort_order: parseInt(document.getElementById('ss-order').value) || 0,
+    visible: document.getElementById('ss-visible').checked,
+  };
+  const r = await apiFetch(id ? `/softskills/${id}` : '/softskills',
+    { method: id ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  if (!r) return;
+  const d = await r.json();
+  if (r.ok) { toast('✅ Soft skill sauvegardé !'); closeModal('ss'); loadSS(); }
+  else toast('❌ ' + d.error, 'error');
+}
+
+// ══════════════════════════════════════════════
+// VEILLE
+// ══════════════════════════════════════════════
+function fillVeilleModal(d) {
+  document.getElementById('veille-id').value        = d?.id || '';
+  document.getElementById('veille-icon').value      = d?.icon || '';
+  document.getElementById('veille-name').value      = d?.name || '';
+  document.getElementById('veille-desc').value      = d?.description || '';
+  document.getElementById('veille-frequency').value = d?.frequency || 'régulier';
+  document.getElementById('veille-order').value     = d?.sort_order || '';
+  document.getElementById('veille-visible').checked = d ? d.visible : true;
+}
+
+async function loadVeille() {
+  const el = document.getElementById('veille-list');
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Chargement...</div>';
+  const r = await apiFetch('/veille/all');
+  if (!r) return;
+  const data = await r.json();
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📡</div><p>Aucune veille</p></div>'; return; }
+  el.innerHTML = data.map(x => `
+    <div class="list-item">
+      <div class="list-item-body">
+        <div class="list-item-title">${x.icon || ''} ${x.name}</div>
+        <div class="list-item-sub">${x.description} · ${x.frequency}</div>
+        <div style="margin-top:6px"><span class="${x.visible ? 'badge-visible' : 'badge-hidden'}">${x.visible ? 'Visible' : 'Masqué'}</span></div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('veille',${JSON.stringify(x).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-sm" onclick="toggleItem('veille',${x.id},loadVeille)" style="background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)">${x.visible ? '🙈' : '👁'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('veille',${x.id},loadVeille)">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function saveVeille() {
+  const id = document.getElementById('veille-id').value;
+  const body = {
+    icon: document.getElementById('veille-icon').value,
+    name: document.getElementById('veille-name').value,
+    description: document.getElementById('veille-desc').value,
+    frequency: document.getElementById('veille-frequency').value,
+    sort_order: parseInt(document.getElementById('veille-order').value) || 0,
+    visible: document.getElementById('veille-visible').checked,
+  };
+  const r = await apiFetch(id ? `/veille/${id}` : '/veille',
+    { method: id ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  if (!r) return;
+  const d = await r.json();
+  if (r.ok) { toast('✅ Veille sauvegardée !'); closeModal('veille'); loadVeille(); }
+  else toast('❌ ' + d.error, 'error');
+}
+
+// ══════════════════════════════════════════════
+// LANGUAGES
+// ══════════════════════════════════════════════
+function fillLangModal(d) {
+  document.getElementById('lang-id').value       = d?.id || '';
+  document.getElementById('lang-name').value     = d?.name || '';
+  document.getElementById('lang-level').value    = d?.level || '';
+  document.getElementById('lang-sublevel').value = d?.sublevel || '';
+  document.getElementById('lang-percent').value  = d?.percent || '';
+  document.getElementById('lang-color').value    = d?.color || 'cyan';
+  document.getElementById('lang-order').value    = d?.sort_order || '';
+}
+
+async function loadLang() {
+  const el = document.getElementById('lang-list');
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Chargement...</div>';
+  const r = await apiFetch('/languages/all');
+  if (!r) return;
+  const data = await r.json();
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🌍</div><p>Aucune langue</p></div>'; return; }
+  el.innerHTML = data.map(x => `
+    <div class="list-item">
+      <div class="list-item-body">
+        <div class="list-item-title">${x.name}</div>
+        <div class="list-item-sub">${x.level} · ${x.sublevel || ''} · ${x.percent}%</div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('lang',${JSON.stringify(x).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('languages',${x.id},loadLang)">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function saveLang() {
+  const id = document.getElementById('lang-id').value;
+  const body = {
+    name: document.getElementById('lang-name').value,
+    level: document.getElementById('lang-level').value,
+    sublevel: document.getElementById('lang-sublevel').value,
+    percent: parseInt(document.getElementById('lang-percent').value) || 100,
+    color: document.getElementById('lang-color').value,
+    sort_order: parseInt(document.getElementById('lang-order').value) || 0,
+  };
+  const r = await apiFetch(id ? `/languages/${id}` : '/languages',
+    { method: id ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  if (!r) return;
+  const d = await r.json();
+  if (r.ok) { toast('✅ Langue sauvegardée !'); closeModal('lang'); loadLang(); }
+  else toast('❌ ' + d.error, 'error');
+}
+
+// ══════════════════════════════════════════════
+// CONTACT
+// ══════════════════════════════════════════════
+async function loadContact() {
+  const r = await apiFetch('/contact');
+  if (!r) return;
+  const d = await r.json();
+  document.getElementById('contact-email').value        = d.email || '';
+  document.getElementById('contact-linkedin').value     = d.linkedin || '';
+  document.getElementById('contact-website').value      = d.website || '';
+  document.getElementById('contact-availability').value = d.availability_text || '';
+  document.getElementById('contact-available').checked  = d.available !== false;
+  const cities = d.cities ? (typeof d.cities === 'string' ? JSON.parse(d.cities) : d.cities) : [];
+  document.getElementById('contact-cities').value = cities.join(', ');
+}
+
+async function saveContact() {
+  const citiesRaw = document.getElementById('contact-cities').value;
+  const cities = citiesRaw.split(',').map(c => c.trim()).filter(Boolean);
+  const body = {
+    email:             document.getElementById('contact-email').value,
+    linkedin:          document.getElementById('contact-linkedin').value,
+    website:           document.getElementById('contact-website').value,
+    availability_text: document.getElementById('contact-availability').value,
+    available:         document.getElementById('contact-available').checked,
+    cities:            JSON.stringify(cities),
+  };
+  const r = await apiFetch('/contact', { method: 'PUT', body: JSON.stringify(body) });
+  if (!r) return;
+  const d = await r.json();
+  r.ok ? toast('✅ Contact mis à jour !') : toast('❌ ' + d.error, 'error');
+}
+
+// ══════════════════════════════════════════════
+// HELPERS CRUD
+// ══════════════════════════════════════════════
+async function toggleItem(endpoint, id, reloader) {
+  const r = await apiFetch(`/${endpoint}/${id}/toggle`, { method: 'PATCH' });
+  if (!r) return;
+  toast('✅ Visibilité modifiée');
+  reloader();
+}
+
+async function deleteItem(endpoint, id, reloader) {
+  if (!confirm('Supprimer cet élément ?')) return;
+  const r = await apiFetch(`/${endpoint}/${id}`, { method: 'DELETE' });
+  if (!r) return;
+  if (r.ok) { toast('✅ Supprimé'); reloader(); }
+  else { const d = await r.json(); toast('❌ ' + d.error, 'error'); }
+}
+
+
+// ══════════════════════════════════════════════
+// UPLOAD IMAGE
+// ══════════════════════════════════════════════
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'project-image') {
+    const url = e.target.value.trim();
+    const preview = document.getElementById('project-image-preview');
+    const thumb = document.getElementById('project-image-thumb');
+    if (url) {
+      thumb.src = url;
+      preview.style.display = 'block';
+      thumb.onerror = () => { preview.style.display = 'none'; };
+    } else {
+      preview.style.display = 'none';
+    }
+  }
+});
+
+async function uploadProjectImage() {
+  const fileInput = document.getElementById("project-image-file");
+  const status = document.getElementById("upload-status");
+  const imageInput = document.getElementById("project-image");
+  
+  if (!fileInput.files[0]) {
+    status.textContent = "Selectionnez un fichier d abord";
+    status.style.color = "var(--warning)";
+    return;
+  }
+
+  const file = fileInput.files[0];
+  if (file.size > 5 * 1024 * 1024) {
+    status.textContent = "Fichier trop lourd (max 5 Mo)";
+    status.style.color = "var(--danger)";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("image", file);
+  
+  status.textContent = "Upload en cours...";
+  status.style.color = "var(--text3)";
+
+  try {
+    const r = await fetch("/api/upload", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + TOKEN },
+      body: formData
+    });
+    const d = await r.json();
+    if (r.ok) {
+      imageInput.value = d.url;
+      status.textContent = "Image uploadee : " + d.url;
+      status.style.color = "var(--success)";
+      document.getElementById("project-image-thumb").src = d.url;
+      document.getElementById("project-image-preview").style.display = "block";
+      fileInput.value = "";
+    } else {
+      status.textContent = "Erreur : " + (d.error || "Upload echoue");
+      status.style.color = "var(--danger)";
+    }
+  } catch(e) {
+    status.textContent = "Erreur reseau";
+    status.style.color = "var(--danger)";
+  }
+}
+
+// Fermer modal en cliquant à l'extérieur
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      const id = overlay.id.replace('modal-', '');
+      closeModal(id);
+    }
+  });
+});
+</script>
+</body>
+</html>
