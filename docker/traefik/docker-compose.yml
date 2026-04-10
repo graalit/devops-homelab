@@ -1,6 +1,8 @@
 networks:
   proxy:
     external: true
+  monitoring_monitoring:
+    external: true
 
 services:
   traefik:
@@ -10,6 +12,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8082:8082"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
@@ -17,5 +20,6 @@ services:
       - ./certs:/certs:ro
     networks:
       - proxy
+      - monitoring_monitoring
     environment:
       - DOCKER_API_VERSION=1.47
